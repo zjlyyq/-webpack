@@ -7,6 +7,7 @@
 
 4. 最直接的运行webpack打包：`./node_modules/.bin/webpack`
   
-  ![]([http://121.199.20.52/the_static/2019-11-0216.09.55.png](http://121.199.20.52/the_static/2019-11-0216.09.55.png))
+  ![](http://121.199.20.52/the_static/2019-11-0216.09.55.png)
   
   
+
