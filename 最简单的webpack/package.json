@@ -5,11 +5,19 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack_build":"webpack"
+    "webpack_build": "webpack"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "babel-preset-vue": "^2.0.2",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "vue": "^2.6.10",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9"
   }

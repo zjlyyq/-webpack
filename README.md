@@ -54,3 +54,4 @@ webpack开箱只支持js和json两种文件类型，通过Loaders去支持其他
 mode是webpack4引入的一个功能，不同的mode，可以启用webpack内置的函数功能。
 
 ![http://121.199.20.52/the_static/mode%e7%9a%84%e4%bd%9c%e7%94%a8.png](http://121.199.20.52/the_static/mode的作用.png)
+
