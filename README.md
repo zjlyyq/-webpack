@@ -55,3 +55,77 @@ mode是webpack4引入的一个功能，不同的mode，可以启用webpack内置
 
 ![http://121.199.20.52/the_static/mode%e7%9a%84%e4%bd%9c%e7%94%a8.png](http://121.199.20.52/the_static/mode的作用.png)
 
+### 使用babel-loader解析es6和React-JSX
+1. 安装@babel/core @babel/preset-env @babel/preset-react babel-loader
+
+2. 编写babel-loader配置文件.babelrc
+
+   ```
+   {
+       "presets": [
+           "@babel/preset-env",  //预设：包含了用于解析最新ES6/7语法的插件的集合
+           "@babel/preset-react" //预设：包含了用于解析JSX语法的插件的集合
+       ]
+   }
+   ```
+
+3. 在webpack.config.js中配置babel-loader
+
+   ```js
+   module:{
+           rules:[
+               {
+                   test:/\.js$/,
+                   use:'babel-loader'
+               }
+           ]
+       },
+   ```
+
+### 解析CSS,Less,Lass
+
+#### 解析css
+
+一开始不太理解什么叫解析css，css难道还需要解析吗？原来这里的解析是指：当在js文件中直接引入css文件的时候，打包的过程中能识别这种行为，css-loader加载css文件，并且转化为CommonJS对象，style-loader将样式通过`style`标签插入到`head`中。
+
+1. 安装css-loader,style-loader
+
+2. 在webpack.config.js中配置
+
+   ```js
+   {
+         test:/.css$/,
+         use:[
+         "style-loader",
+         "css-loader"
+         ]
+   }
+   ```
+
+   > 注意loader是链式加载，即：从右到左。css-loader将处理好的结果交给style-loader处理，所以这里的顺序不能随意。
+
+3. 效果图
+
+   ![http://121.199.20.52/the_static/css-loader%e5%92%8cstyle-loader%e8%bd%ac%e6%8d%a2%e5%90%8e%e7%9a%84%e9%a1%b5%e9%9d%a2%e6%95%88%e6%9e%9c.png](http://121.199.20.52/the_static/css-loader和style-loader转换后的页面效果.png)
+
+#### 解析less
+
+解析Less只需要在解析CSS的基础上，多加一个less-loader。
+
+1. 安装less,less-loader
+
+2. 在webpack.config.js中配置
+
+   ```js
+   {
+     test:/.less$/,
+     use:[
+       "style-loader",
+       "css-loader",
+       "less-loader"
+     ]
+   }
+   ```
+
+   
+

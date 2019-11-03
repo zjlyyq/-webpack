@@ -1,10 +1,11 @@
 // document.write('search page!')
 import React from 'react'
 import ReactDom from 'react-dom'
-
+import './search.less'
+// require('./search.less')
 class Search extends React.Component{
     render(){
-        return <div>Search Text</div>
+        return <div class="search-text">Search Text</div>
     }
 }
 

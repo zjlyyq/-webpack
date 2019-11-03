@@ -1,6 +1,6 @@
 {
     "presets": [
-        "@babel/preset-env",
-        "@babel/preset-react"
+        "@babel/preset-env",  //预设：包含了用于解析最新ES6/7语法的插件的集合
+        "@babel/preset-react" //预设：包含了用于解析JSX语法的插件的集合
     ]
 }
