@@ -131,7 +131,7 @@ mode是webpack4引入的一个功能，不同的mode，可以启用webpack内置
 
 ### 解析图片和字体
 
-使用file-loader
+#### 使用file-loader
 
 1. 安装file-loader
 
@@ -143,4 +143,49 @@ mode是webpack4引入的一个功能，不同的mode，可以启用webpack内置
    	use:"file-loader"
    }
    ```
+
+#### 使用url-loader
+
+1. 安装
+
+2. 配置
+
+   ```js
+   {
+   	test:/.(jpg|png|jpeg|gif|svg)$/,
+     use:[
+       {
+       	loader:'url-loader',
+         options:{
+         	limit:102400  //100k
+         }
+       }
+     ]
+   },
+   ```
+
+   
+
+###  文件监听
+
+1. 启动webpack命令是，增加`--watch`
+
+2. Webpack.config.js文件中配置
+
+   ```js
+   watch:true,
+   // 只有开启监听模式，watchOptions才有意义
+   watchOptions:{
+   		// 默认为空，不监听的文件或文件夹，支持正则表达
+       ignored:/node_modules/,
+       // 监听到变化后等待300ms再去执行，默认300ms
+       aggregateTimeout:300,
+       // 轮询频率，每秒1000次
+       poll:1000
+   },
+   ```
+
+#### 监听原理
+
+轮询判断文件的最后编辑时间是否变化，某个文件发生变化，并不会立即告诉监听者，而是先缓存起来，等aggregateTimeout时间再启动编译。
 
