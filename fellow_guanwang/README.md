@@ -382,3 +382,135 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 ### 管理资源
 
+在 webpack 出现之前，前端开发人员会使用 grunt 和 gulp 等工具来处理资源，并将它们从 `/src` 文件夹移动到 `/dist` 或 `/build` 目录中。同样方式也被用于 JavaScript 模块，但是，像 webpack 这样的工具，将**动态打包(dynamically bundle)**所有依赖项（创建所谓的[依赖图(dependency graph)](https://www.webpackjs.com/concepts/dependency-graph)）。这是极好的创举，因为现在每个模块都可以*明确表述它自身的依赖*，我们将避免打包未使用的模块。
+
+webpack 最出色的功能之一就是，除了 JavaScript，还可以通过 loader *引入任何其他类型的文件*。也就是说，以上列出的那些 JavaScript 的优点（例如显式依赖），同样可以用来构建网站或 web 应用程序中的所有非 JavaScript 内容。
+
+开始之前，先对项目做一个小小的修改:
+
+**dist/index.html**
+
+```diff
+  <!doctype html>
+  <html>
+    <head>
+-    <title>起步</title>
++    <title>管理资源</title>
+    </head>
+    <body>
+      <script src="./main.js"></script>
+    </body>
+  </html>
+```
+
+#### 加载css
+
+为了从 JavaScript 模块中 `import` 一个 CSS 文件，你需要在 [`module` 配置中](https://www.webpackjs.com/configuration/module) 安装并添加 [style-loader](https://www.webpackjs.com/loaders/style-loader) 和 [css-loader](https://www.webpackjs.com/loaders/css-loader)：
+
+```sh
+npm install --save-dev style-loader css-loader
+```
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+
+  module.exports = {
+      entry: "./src/index.js",
+      output: {
+          filename: 'bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
++     module: {
++         rules: [
++             {
++                 test: /\.css$/,
++                 use: [
++                     'style-loader',
++                     'css-loader'
++                 ]
++             }
++         ]
++     }
+  }
+```
+
+> *webpack 根据正则表达式，来确定应该查找哪些文件，并将其提供给指定的 loader。在这种情况下，以* `.css` *结尾的全部文件，都将被提供给* `style-loader` *和* `css-loader`*。*
+
+这使你可以在依赖于此样式的文件中 `import './style.css'`。现在，当该模块运行时，含有 CSS 字符串的 `` 标签，将被插入到 html 文件的 `` 中。
+
+我们尝试一下，通过在项目中添加一个新的 `style.css` 文件，并将其导入到我们的 `index.js` 中：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── dist
+  │   ├── bundle.js
+  │   ├── index.html
+  │   └── main.js
+  ├── package-lock.json
+  ├── package.json
+  ├── src
+  │   ├── index.js
++ │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**src/style.css**
+
+```css
+.hello {
+    color: red;
+}
+```
+
+**src/index.js**
+
+```diff
+  import _ from 'loadsh';
++ import './style.css';
+ 
+  function component() {
+      var element = document.createElement('div');
+   
+      // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
++     element.classList.add('hello');
+
+      return element;
+  }
+```
+
+现在运行构建命令：
+
+```sh
+npm run build
+
+Hash: 294df95764363b55663d
+Version: webpack 4.41.5
+Time: 3047ms
+Built at: 2020-02-08 01:35:53
+    Asset      Size  Chunks             Chunk Names
+bundle.js  75.7 KiB       0  [emitted]  main
+Entrypoint main = bundle.js
+[1] ./src/index.js 321 bytes {0} [built]
+[2] (webpack)/buildin/global.js 472 bytes {0} [built]
+[3] (webpack)/buildin/module.js 497 bytes {0} [built]
+[4] ./src/style.css 561 bytes {0} [built]
+[6] ./node_modules/css-loader/dist/cjs.js!./src/style.css 260 bytes {0} [built]
+    + 3 hidden modules
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+```
+
+再次在浏览器中打开 `index.html`，你应该看到 `Hello webpack` 现在的样式是红色。要查看 webpack 做了什么，请检查页面（不要查看页面源代码，因为它不会显示结果），并查看页面的 head 标签。它应该包含我们在 `index.js` 中导入的 style 块元素。
+
+> *请注意，在多数情况下，你也可以进行* [CSS 分离](https://www.webpackjs.com/plugins/extract-text-webpack-plugin)*，以便在生产环境中节省加载时间。最重要的是，现有的 loader 可以支持任何你可以想到的 CSS 处理器风格 -* [postcss](https://www.webpackjs.com/loaders/postcss-loader)*,* [sass](https://www.webpackjs.com/loaders/sass-loader) *和* [less](https://www.webpackjs.com/loaders/less-loader) *等。*
+
