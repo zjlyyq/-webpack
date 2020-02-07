@@ -331,9 +331,54 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 **package.json**
 
+```diff
+  {
+    "name": "fellow_guanwang",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
++     "build": "webpack --config webpack.config.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "webpack": "^4.41.5",
+      "webpack-cli": "^3.3.10"
+    },
+    "dependencies": {
+      "loadsh": "0.0.4"
+    }
+}
 ```
 
+现在，可以使用 `npm run build` 命令，来替代我们之前使用的 `npx` 命令。注意，使用 npm 的 `scripts`，我们可以像使用 `npx` 那样通过模块名引用本地安装的 npm 包。这是大多数基于 npm 的项目遵循的标准，因为它允许所有贡献者使用同一组通用脚本（如果必要，每个 flag 都带有 `--config` 标志）。
+
+现在运行以下命令，然后看看你的脚本别名是否正常运行：
+
+```
+npm run build
+
+Hash: 1d32ddb2222f6868fc98
+Version: webpack 4.41.5
+Time: 398ms
+Built at: 2020-02-08 00:35:40
+    Asset    Size  Chunks             Chunk Names
+bundle.js  72 KiB       0  [emitted]  main
+Entrypoint main = bundle.js
+[1] ./src/index.js 265 bytes {0} [built]
+[2] (webpack)/buildin/global.js 472 bytes {0} [built]
+[3] (webpack)/buildin/module.js 497 bytes {0} [built]
+    + 1 hidden module
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
 ```
 
+> *通过向* `npm run build` *命令和你的参数之间添加两个中横线，可以将自定义参数传递给 webpack，例如：*`npm run build -- --colors`*。*
 
+### 管理资源
 
