@@ -514,3 +514,136 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 > *请注意，在多数情况下，你也可以进行* [CSS 分离](https://www.webpackjs.com/plugins/extract-text-webpack-plugin)*，以便在生产环境中节省加载时间。最重要的是，现有的 loader 可以支持任何你可以想到的 CSS 处理器风格 -* [postcss](https://www.webpackjs.com/loaders/postcss-loader)*,* [sass](https://www.webpackjs.com/loaders/sass-loader) *和* [less](https://www.webpackjs.com/loaders/less-loader) *等。*
 
+#### 加载图片
+
+假想，现在我们正在下载 CSS，但是我们的背景和图标这些图片，要如何处理呢？使用 [file-loader](https://www.webpackjs.com/loaders/file-loader)，我们可以轻松地将这些内容混合到 CSS 中：
+
+```sh
+npm install --save-dev file-loader
+```
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+
+  module.exports = {
+      entry: "./src/index.js",
+      output: {
+          filename: 'bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
+      module: {
+          rules: [
+              {
+                  test: /\.css$/,
+                  use: [
+                      'style-loader',
+                      'css-loader'
+                  ]
+              },
++             {
++                 test: /\.(png|svg|jpg|gif)$/,
++                 use: [
++                     'file-loader'
++                 ]
++             }
+          ]
+      }
+  }
+```
+
+现在，当你 `import MyImage from './my-image.png'`，该图像将被处理并添加到 `output` 目录，_并且_ `MyImage` 变量将包含该图像在处理后的最终 url。当使用 [css-loader](https://www.webpackjs.com/loaders/css-loader) 时，如上所示，你的 CSS 中的 `url('./my-image.png')` 会使用类似的过程去处理。loader 会识别这是一个本地文件，并将 `'./my-image.png'` 路径，替换为`输出`目录中图像的最终路径。[html-loader](https://www.webpackjs.com/loaders/html-loader) 以相同的方式处理 `<img src="./my-image.png" />`。
+
+我们向项目添加一个图像，然后看它是如何工作的，你可以使用任何你喜欢的图像：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── dist
+  │   ├── bundle.js
+  │   ├── index.html
+  │   └── main.js
+  ├── package-lock.json
+  ├── package.json
+  ├── src
++ │   ├── Icon.svg
+  │   ├── index.js
+  │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**src/index.js**
+
+```diff
+   import _ from 'loadsh';
+   import './style.css';
++  import Icon from './Icon.svg'
+
+   function component() {
+       var element = document.createElement('div');
+
+       // Loadsh 现在通过import导入
+       element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+       element.classList.add('hello');
+
++      //添加图片到div
++      var myIcon = new Image();
++      myIcon.src = Icon;
++      element.appendChild(myIcon);
+
+       return element;
+   }
+
+   document.body.appendChild(component());
+```
+
+**rc/style.css**
+
+```diff
+   .hello {
+       color: red;
++      background: url(./Icon.svg);
+   }
+```
+
+让我们重新构建，并再次打开 index.html 文件：
+
+```shell
+npm run build
+
+Hash: 3da5d0a541b0de8fd581
+Version: webpack 4.41.5
+Time: 635ms
+Built at: 2020-02-08 10:46:48
+                               Asset      Size  Chunks             Chunk Names
+                           bundle.js  76.2 KiB       0  [emitted]  main
+cd0bb358c45b584743d8ce4991777c42.svg  2.33 KiB          [emitted]  
+Entrypoint main = bundle.js
+[0] ./src/Icon.svg 80 bytes {0} [built]
+[2] ./src/index.js 467 bytes {0} [built]
+[3] (webpack)/buildin/global.js 472 bytes {0} [built]
+[4] (webpack)/buildin/module.js 497 bytes {0} [built]
+[5] ./src/style.css 561 bytes {0} [built]
+[7] ./node_modules/css-loader/dist/cjs.js!./src/style.css 590 bytes {0} [built]
+    + 4 hidden modules
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+```
+
+如果一切顺利，和 `Hello webpack` 文本旁边的 `img` 元素一样，现在看到的图标是重复的背景图片。如果你检查此元素，你将看到实际的文件名已更改为像 `cd0bb358c45b584743d8ce4991777c42.svg` 一样。这意味着 webpack 在 `src` 文件夹中找到我们的文件，并成功处理过它！
+
+直接查看浏览器可以更直观地理解上面👆地话：
+
+![](static/imgs/截屏2020-02-0810.52.00.png)
+
+> *合乎逻辑下一步是，压缩和优化你的图像。查看* [image-webpack-loader](https://github.com/tcoopman/image-webpack-loader) *和* [url-loader](https://www.webpackjs.com/loaders/url-loader)*，以了解更多关于如果增强加载处理图片功能*
+
+#### 加载字体
+

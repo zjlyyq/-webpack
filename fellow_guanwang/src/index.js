@@ -1,5 +1,6 @@
 import _ from 'loadsh';
 import './style.css';
+import Icon from './Icon.svg'
 
 function component() {
     var element = document.createElement('div');
@@ -8,6 +9,11 @@ function component() {
     element.innerHTML = _.join(['Hello', 'webpack'], ' ');
     element.classList.add('hello');
 
+    //添加图片到div
+    var myIcon = new Image();
+    myIcon.src = Icon;
+    element.appendChild(myIcon);
+    
     return element;
 }
   
