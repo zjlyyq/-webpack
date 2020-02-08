@@ -1536,3 +1536,182 @@ npm install --save-dev webpack-dev-server
 
 > *现在，服务器正在运行，你可能需要尝试*[模块热替换(Hot Module Replacement)](https://www.webpackjs.com/guides/hot-module-replacement)*！*
 
+##### 使用 webpack-dev-middleware
+
+`webpack-dev-middleware` 是一个容器(wrapper)，它可以把 webpack 处理后的文件传递给一个服务器(server)。 `webpack-dev-server` 在内部使用了它，同时，它也可以作为一个单独的包来使用，以便进行更多自定义设置来实现更多的需求。接下来是一个 webpack-dev-middleware 配合 express server 的示例。
+
+首先，安装 `express` 和 `webpack-dev-middleware`：
+
+```sh
+npm install --save-dev express webpack-dev-middleware
+```
+
+接下来我们需要对 webpack 的配置文件做一些调整，以确保中间件(middleware)功能能够正确启用：
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+  const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+  module.exports = {
+      entry: {
+          app: './src/index.js',
+          print: './src/print.js'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist'),
++         publicPath: '/'
+      },
+      devtool: 'inline-source-map',
+      devServer: {
+          contentBase: './dist'
+      },
+      plugins: [
+          new CleanWebpackPlugin(),
+          new HtmlWebpackPlugin({
+              title: "管理输出"
+          }),
+      ]
+  }
+```
+
+`publicPath` 也会在服务器脚本用到，以确保文件资源能够在 `http://localhost:3000` 下正确访问，我们稍后再设置端口号。下一步就是设置我们自定义的 `express` 服务：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── package-lock.json
+  ├── package.json
++ ├── server.js
+  ├── src
+  │   ├── index.js
+  │   └── print.js
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**server.js**
+
+```js
+const express = require('express')
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+
+const app =  express()
+const config = require('./webpack.config.js');
+const compiler = webpack(config);
+
+// Tell express to use the webpack-dev-middleware and use the webpack.config.js
+// configuration file as a base.
+app.use(webpackDevMiddleware(compiler, {
+    publicPath: config.output.publicPath
+}));
+
+// Serve the files on port 3000.
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000!\n');
+});
+```
+
+现在，添加一个 npm script，以使我们更方便地运行服务：
+
+**package.json**
+
+```diff
+  {
+    "name": "fellow_guanwang",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack --config webpack.config.js",
+      "watch": "webpack --watch",
+      "start": "webpack-dev-server --open",
++     "server": "node server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "clean-webpack-plugin": "^3.0.0",
+      "css-loader": "^3.4.2",
+      "csv-loader": "^3.0.2",
+      "express": "^4.17.1",
+      "file-loader": "^5.0.2",
+      "html-webpack-plugin": "^3.2.0",
+      "style-loader": "^1.1.3",
+      "webpack": "^4.41.5",
+      "webpack-cli": "^3.3.10",
+      "webpack-dev-middleware": "^3.7.2",
+      "webpack-dev-server": "^3.10.3",
+      "xml-loader": "^1.2.1"
+    },
+    "dependencies": {
+      "loadsh": "0.0.4"
+    }
+  }
+
+```
+
+现在，在你的终端执行 `npm run server`，将会有类似如下信息输出：
+
+```sh
+pm run server
+Example app listening on port 3000!
+
+⚠ ｢wdm｣: Hash: 01a5af9282e7af39985d
+Version: webpack 4.41.5
+Time: 1240ms
+Built at: 2020-02-09 00:16:54
+          Asset       Size  Chunks                    Chunk Names
+  app.bundle.js    975 KiB    0, 1  [emitted]  [big]  app
+     index.html  243 bytes          [emitted]         
+print.bundle.js   7.36 KiB       1  [emitted]         print
+Entrypoint app [big] = app.bundle.js
+Entrypoint print = print.bundle.js
+[0] ./src/print.js 85 bytes {0} {1} [built]
+[1] ./node_modules/loadsh/lodash.js 527 KiB {0} [built]
+[2] ./src/index.js 459 bytes {0} [built]
+[3] (webpack)/buildin/global.js 472 bytes {0} [built]
+[4] (webpack)/buildin/module.js 497 bytes {0} [built]
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+
+WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets: 
+  app.bundle.js (975 KiB)
+
+WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+Entrypoints:
+  app (975 KiB)
+      app.bundle.js
+
+
+WARNING in webpack performance recommendations: 
+You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+For more info visit https://webpack.js.org/guides/code-splitting/
+Child html-webpack-plugin for "index.html":
+         Asset     Size  Chunks  Chunk Names
+    index.html  533 KiB       0  
+    Entrypoint undefined = index.html
+    [0] ./node_modules/html-webpack-plugin/lib/loader.js!./node_modules/html-webpack-plugin/default_index.ejs 376 bytes {0} [built]
+    [1] ./node_modules/lodash/lodash.js 528 KiB {0} [built]
+    [2] (webpack)/buildin/global.js 472 bytes {0} [built]
+    [3] (webpack)/buildin/module.js 497 bytes {0} [built]
+ℹ ｢wdm｣: Compiled with warnings.
+```
+
+现在，打开浏览器，跳转到 `http://localhost:3000`，你应该看到你的webpack 应用程序已经运行！
+
+> *如果想要了解更多关于模块热替换(Hot Module Replacement)的机制，我们推荐你查看*[模块热替换(Hot Module Replacement)](https://www.webpackjs.com/guides/hot-module-replacement/)*指南。*
+

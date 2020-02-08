@@ -8,7 +8,7 @@ function component() {
     // Loadsh 现在通过import导入
     element.innerHTML = _.join(['Hello', 'webpack'], ' ');
 
-    btn.innerHTML = 'Click me and check the console!';
+    btn.innerHTML = 'Click me and check the console!!!';
     btn.onclick = printMe;
 
     element.appendChild(btn);
