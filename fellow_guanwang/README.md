@@ -647,3 +647,117 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 #### 加载字体
 
+那么，像字体这样的其他资源如何处理呢？file-loader 和 url-loader 可以接收并加载任何文件，然后将其输出到构建目录。这就是说，我们可以将它们用于任何类型的文件，包括字体。让我们更新 `webpack.config.js` 来处理字体文件：
+
+**webpack.config.js**
+
+```diff
+const path = require('path');
+
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            },
+            {
+                test: /\.(png|svg|jpg|gif)$/,
+                use: [
+                    'file-loader'
+                ]
+            },
++           {
++               test: /\.(woff|woff2|eot|ttf|otf)$/,
++               use: [
++                   'file-loader'
++               ]
++           }
+        ]
+    }
+}
+```
+
+在项目中添加一些字体文件：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── dist
+  │   ├── bundle.js
+  │   ├── cd0bb358c45b584743d8ce4991777c42.svg
+  │   ├── index.html
+  │   └── main.js
+  ├── package-lock.json
+  ├── package.json
+  ├── src
+  │   ├── Icon.svg
++ │   ├── raleway_thin.ttf
+  │   ├── index.js
+  │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+通过配置好 loader 并将字体文件放在合适的地方，你可以通过一个 `@font-face` 声明引入。本地的 `url(...)` 指令会被 webpack 获取处理，就像它处理图片资源一样：
+
+**src/style.css**
+
+```diff
++  @font-face {
++      font-family: 'MyFont';
++      src:  url(./raleway_thin.ttf);
++      font-weight: 600;
++      font-style: normal;
++  }
++
+   .hello {
+       color: red;
+       background: url(./Icon.svg);
++      font-family: 'MyFont';
+   }
+```
+
+现在让我们重新构建来看看 webpack 是否处理了我们的字体：
+
+```shell
+npm run build
+
+Hash: 5bf07e40983fbe94dab6
+Version: webpack 4.41.5
+Time: 2871ms
+Built at: 2020-02-08 11:24:02
+                               Asset      Size  Chunks             Chunk Names
+                           bundle.js  76.5 KiB       0  [emitted]  main
+cd0bb358c45b584743d8ce4991777c42.svg  2.33 KiB          [emitted]  
+ee2d5b0472964762a3bc2b6066e51f81.ttf  70.6 KiB          [emitted]  
+Entrypoint main = bundle.js
+ [0] ./src/Icon.svg 80 bytes {0} [built]
+ [2] ./src/index.js 467 bytes {0} [built]
+ [3] (webpack)/buildin/global.js 472 bytes {0} [built]
+ [4] (webpack)/buildin/module.js 497 bytes {0} [built]
+ [5] ./src/style.css 561 bytes {0} [built]
+ [7] ./node_modules/css-loader/dist/cjs.js!./src/style.css 945 bytes {0} [built]
+[10] ./src/raleway_thin.ttf 80 bytes {0} [built]
+    + 4 hidden modules
+    
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+```
+
+重新打开 `index.html` 看看我们的 `Hello webpack` 文本显示是否换上了新的字体。如果一切顺利，你应该能看到变化。
+
+![](static/imgs/截屏2020-02-0811.24.20.png)
+
