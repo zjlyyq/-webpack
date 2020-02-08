@@ -1377,6 +1377,8 @@ Child html-webpack-plugin for "index.html":
         + 2 hidden modules
 ```
 
+> 注意：使用source map后文件大小从72k增加到了975k！！！，不适合成生产环境。
+
 现在在浏览器打开最终生成的 `index.html` 文件，点击按钮，并且在控制台查看显示的错误。错误应该如下：
 ![](static/imgs/截屏2020-02-0823.39.22.png)
 
@@ -1399,3 +1401,138 @@ webpack 中有几个不同的选项，可以帮助你在代码发生变化后自
 ##### 使用观察模式
 
 你可以指示 webpack "watch" 依赖图中的所有文件以进行更改。如果其中一个文件被更新，代码将被重新编译，所以你不必手动运行整个构建。
+
+我们添加一个用于启动 webpack 的观察模式的 npm script 脚本：
+
+**package.json**
+
+```diff
+  {
+    "name": "fellow_guanwang",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack --config webpack.config.js",
++     "watch": "webpack --watch"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "clean-webpack-plugin": "^3.0.0",
+      "css-loader": "^3.4.2",
+      "csv-loader": "^3.0.2",
+      "file-loader": "^5.0.2",
+      "html-webpack-plugin": "^3.2.0",
+      "style-loader": "^1.1.3",
+      "webpack": "^4.41.5",
+      "webpack-cli": "^3.3.10",
+      "xml-loader": "^1.2.1"
+    },
+    "dependencies": {
+      "loadsh": "0.0.4"
+    }
+  }
+
+```
+
+现在，你可以在命令行中运行 `npm run watch`，就会看到 webpack 编译代码，然而却不会退出命令行。这是因为 script 脚本还在观察文件。
+
+现在，webpack 观察文件的同时，我们先移除我们之前引入的错误：
+
+**src/print.js**
+
+```diff
+	export default function printMe() {
+-   cosnole.log('I get called from print.js!');
++   console.log('I get called from print.js!');
+  }
+```
+
+现在,保存文件并检查终端窗口。应该可以看到 webpack 自动重新编译修改后的模块！
+
+唯一的缺点是，为了看到修改后的实际效果，你需要刷新浏览器。如果能够自动刷新浏览器就更好了，可以尝试使用 `webpack-dev-server`，恰好可以实现我们想要的功能。
+
+##### 使用 webpack-dev-server
+
+`webpack-dev-server` 为你提供了一个简单的 web 服务器，并且能够实时重新加载(live reloading)。让我们设置以下：
+
+```sh
+npm install --save-dev webpack-dev-server
+```
+
+修改配置文件，告诉开发服务器(dev server)，在哪里查找文件：
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+  const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+  module.exports = {
+      entry: {
+          app: './src/index.js',
+          print: './src/print.js'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
+      devtool: 'inline-source-map',
++     devServer: {
++         contentBase: './dist'
++     },
+      plugins: [
+          new CleanWebpackPlugin(),
+          new HtmlWebpackPlugin({
+              title: "管理输出"
+          }),
+      ]
+  }
+```
+
+以上配置告知 `webpack-dev-server`，在 `localhost:8080` 下建立服务，将 `dist` 目录下的文件，作为可访问文件。
+
+让我们添加一个 script 脚本，可以直接运行开发服务器(dev server)：
+
+**package.json**
+
+```diff
+  {
+    "name": "fellow_guanwang",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack --config webpack.config.js",
+      "watch": "webpack --watch",
++     "start": "webpack-dev-server --open"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "clean-webpack-plugin": "^3.0.0",
+      "css-loader": "^3.4.2",
+      "csv-loader": "^3.0.2",
+      "file-loader": "^5.0.2",
+      "html-webpack-plugin": "^3.2.0",
+      "style-loader": "^1.1.3",
+      "webpack": "^4.41.5",
+      "webpack-cli": "^3.3.10",
+      "xml-loader": "^1.2.1"
+    },
+    "dependencies": {
+      "loadsh": "0.0.4"
+    }
+  }
+```
+
+`webpack-dev-server` 带有许多可配置的选项。转到[相关文档](https://www.webpackjs.com/configuration/dev-server)以了解更多。
+
+> *现在，服务器正在运行，你可能需要尝试*[模块热替换(Hot Module Replacement)](https://www.webpackjs.com/guides/hot-module-replacement)*！*
+
