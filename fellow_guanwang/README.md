@@ -1273,3 +1273,129 @@ npm install clean-webpack-plugin --save-dev
 
 现在，你已经了解如何向 HTML 动态添加 bundle，让我们深入[开发指南](https://www.webpackjs.com/guides/development)。或者，如果你想要深入更多相关高级话题，我们推荐你前往[代码分离指南](https://www.webpackjs.com/guides/code-splitting)。
 
+### 开发
+
+如果你一直跟随之前的指南，应该对一些 webpack 基础知识有着很扎实的理解。在我们继续之前，先来看看如何建立一个开发环境，使我们的开发变得更容易一些。
+
+<div style="padding:5px 14px;background:#fbedb7;">
+  <p style="color:#8c8466;font-style: italic;">
+    本指南中的工具仅用于开发环境，请不要在生产环境中使用它们！
+  </p>
+</div>
+
+#### 使用 source map
+
+当 webpack 打包源代码时，可能会很难追踪到错误和警告在源代码中的原始位置。例如，如果将三个源文件（`a.js`, `b.js` 和 `c.js`）打包到一个 bundle（`bundle.js`）中，而其中一个源文件包含一个错误，那么堆栈跟踪就会简单地指向到 `bundle.js`。这并通常没有太多帮助，因为你可能需要准确地知道错误来自于哪个源文件。
+
+为了更容易地追踪错误和警告，JavaScript 提供了 [source map](http://blog.teamtreehouse.com/introduction-source-maps) 功能，将编译后的代码映射回原始源代码。如果一个错误来自于 `b.js`，source map 就会明确的告诉你。
+
+source map 有很多[不同的选项](https://www.webpackjs.com/configuration/devtool)可用，请务必仔细阅读它们，以便可以根据需要进行配置。
+
+对于本指南，我们使用 `inline-source-map` 选项，这有助于解释说明我们的目的（仅解释说明，不要用于生产环境）：
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+  const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+  module.exports = {
+      entry: {
+          app: './src/index.js',
+          print: './src/print.js'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
++     devtool: 'inline-source-map',
+      plugins: [
+          new CleanWebpackPlugin(),
+          new HtmlWebpackPlugin({
+              title: "管理输出"
+          }),
+      ]
+  }
+```
+
+现在，让我们来做一些调试，在 `print.js` 文件中生成一个错误：
+
+**src/print.js**
+
+```diff
+  export default function printMe() {
+-     console.log('I get called from print.js!');
++     cosnole.error('I get called from print.js!');
+  }
+```
+
+运行 `npm run build`，就会编译为如下：
+
+```sh
+npm run build
+
+Hash: 41b963204a46d30405a9
+Version: webpack 4.41.5
+Time: 1099ms
+Built at: 2020-02-08 23:38:03
+          Asset       Size  Chunks                    Chunk Names
+  app.bundle.js    975 KiB    0, 1  [emitted]  [big]  app
+     index.html  241 bytes          [emitted]         
+print.bundle.js   7.43 KiB       1  [emitted]         print
+Entrypoint app [big] = app.bundle.js
+Entrypoint print = print.bundle.js
+[0] ./src/print.js 138 bytes {0} {1} [built]
+[2] ./src/index.js 457 bytes {0} [built]
+[3] (webpack)/buildin/global.js 472 bytes {0} [built]
+[4] (webpack)/buildin/module.js 497 bytes {0} [built]
+    + 1 hidden module
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+
+WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets: 
+  app.bundle.js (975 KiB)
+
+WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+Entrypoints:
+  app (975 KiB)
+      app.bundle.js
+
+
+WARNING in webpack performance recommendations: 
+You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+For more info visit https://webpack.js.org/guides/code-splitting/
+Child html-webpack-plugin for "index.html":
+     1 asset
+    Entrypoint undefined = index.html
+    [2] (webpack)/buildin/global.js 472 bytes {0} [built]
+    [3] (webpack)/buildin/module.js 497 bytes {0} [built]
+        + 2 hidden modules
+```
+
+现在在浏览器打开最终生成的 `index.html` 文件，点击按钮，并且在控制台查看显示的错误。错误应该如下：
+![](static/imgs/截屏2020-02-0823.39.22.png)
+
+我们可以看到，此错误包含有发生错误的文件（`print.js`）和行号（2）的引用。这是非常有帮助的，因为现在我们知道了，所要解决的问题的确切位置。
+
+#### 选择一个开发工具
+
+> *一些文本编辑器具有“安全写入”功能，可能会干扰以下某些工具。阅读*[调整文本编辑器](https://www.webpackjs.com/guides/development/#adjusting-your-text-editor)*以解决这些问题。*
+
+每次要编译代码时，手动运行 `npm run build` 就会变得很麻烦。
+
+webpack 中有几个不同的选项，可以帮助你在代码发生变化后自动编译代码：
+
+1. webpack's Watch Mode
+2. webpack-dev-server
+3. webpack-dev-middleware
+
+多数场景中，你可能需要使用 `webpack-dev-server`，但是不妨探讨一下以上的所有选项。
+
+##### 使用观察模式
+
+你可以指示 webpack "watch" 依赖图中的所有文件以进行更改。如果其中一个文件被更新，代码将被重新编译，所以你不必手动运行整个构建。
