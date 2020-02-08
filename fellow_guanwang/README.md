@@ -761,3 +761,148 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 ![](static/imgs/截屏2020-02-0811.24.20.png)
 
+#### 加载数据
+
+此外，可以加载的有用资源还有数据，如 JSON 文件，CSV、TSV 和 XML。类似于 NodeJS，JSON 支持实际上是内置的，也就是说 `import Data from './data.json'` 默认将正常运行。要导入 CSV、TSV 和 XML，你可以使用 [csv-loader](https://github.com/theplatapi/csv-loader) 和 [xml-loader](https://github.com/gisikw/xml-loader)。让我们处理这三类文件：
+
+```sh
+npm install --save-dev csv-loader xml-loader
+```
+
+**webpack.config.js**
+
+```diff
+const path = require('path');
+
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            },
+            {
+                test: /\.(png|svg|jpg|gif)$/,
+                use: [
+                    'file-loader'
+                ]
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                use: [
+                    'file-loader'
+                ]
+            },
++       		{
++         			test: /\.(csv|tsv)$/,
++         			use: [
++           			'csv-loader'
++         			]
++       		},
++       		{
++         			test: /\.xml$/,
++         			use: [
++           			'xml-loader'
++         			]
++       		}
+        ]
+    }
+}
+```
+
+给你的项目添加一些数据文件：
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── dist
+  │   ├── bundle.js
+  │   ├── cd0bb358c45b584743d8ce4991777c42.svg
+  │   ├── ee2d5b0472964762a3bc2b6066e51f81.ttf
+  │   ├── index.html
+  │   └── main.js
+  ├── package-lock.json
+  ├── package.json
+  ├── src
+  │   ├── Icon.svg
++ │   ├── data.xml
+  │   ├── index.js
+  │   ├── raleway_thin.ttf
+  │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+现在，你可以 `import` 这四种类型的数据(JSON, CSV, TSV, XML)中的任何一种，所导入的 `Data` 变量将包含可直接使用的已解析 JSON：
+
+**src/index.js**
+
+```diff
+  import _ from 'loadsh';
+  import './style.css';
+  import Icon from './Icon.svg'
++ import Data from './data.xml'
+
+  function component() {
+      var element = document.createElement('div');
+
+      // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+      element.classList.add('hello');
+
+      //添加图片到div
+      var myIcon = new Image();
+      myIcon.src = Icon;
+      element.appendChild(myIcon);
+
++     console.log(Data)
+
+      return element;
+  }
+
+  document.body.appendChild(component());
+```
+
+重新打包
+
+```sh
+npm run build
+
+Hash: 1e268a2d8c51abf1fa89
+Version: webpack 4.41.5
+Time: 2723ms
+Built at: 2020-02-08 12:56:24
+                               Asset      Size  Chunks             Chunk Names
+                           bundle.js  76.6 KiB       0  [emitted]  main
+cd0bb358c45b584743d8ce4991777c42.svg  2.33 KiB          [emitted]  
+ee2d5b0472964762a3bc2b6066e51f81.ttf  70.6 KiB          [emitted]  
+Entrypoint main = bundle.js
+ [0] ./src/Icon.svg 80 bytes {0} [built]
+ [2] ./src/data.xml 113 bytes {0} [built]
+ [3] ./src/index.js 516 bytes {0} [built]
+ [4] (webpack)/buildin/global.js 472 bytes {0} [built]
+ [5] (webpack)/buildin/module.js 497 bytes {0} [built]
+ [6] ./src/style.css 561 bytes {0} [built]
+ [8] ./node_modules/css-loader/dist/cjs.js!./src/style.css 945 bytes {0} [built]
+[11] ./src/raleway_thin.ttf 80 bytes {0} [built]
+    + 4 hidden modules
+
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+```
+
+当你打开 `index.html` 并查看开发者工具中的控制台，你应该能够看到你导入的数据被打印在了上面！
+
+![](static/imgs/截屏2020-02-0812.57.09.png)
+
+> *在使用* [d3](https://github.com/d3) *等工具来实现某些数据可视化时，预加载数据会非常有用。我们可以不用再发送 ajax 请求，然后于运行时解析数据，而是在构建过程中将其提前载入并打包到模块中，以便浏览器加载模块后，可以立即从模块中解析数据。*
