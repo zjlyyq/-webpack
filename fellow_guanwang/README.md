@@ -924,3 +924,101 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 这种配置方式会使你的代码更具备可移植性，因为现有的统一放置的方式会造成所有资源紧密耦合在一起。假如你想在另一个项目中使用 `/my-component`，只需将其复制或移动到 `/components` 目录下。只要你已经安装了任何*扩展依赖(external dependencies)*，并且你*已经在配置中定义过相同的 loader*，那么项目应该能够良好运行。
 
 但是，假如你无法使用新的开发方式，只能被固定于旧有开发方式，或者你有一些在多个组件（视图、模板、模块等）之间共享的资源。你仍然可以将这些资源存储在公共目录(base directory)中，甚至配合使用 [alias](https://www.webpackjs.com/configuration/resolve#resolve-alias) 来使它们更方便 `import 导入`。
+
+#### 回退处理
+
+对于接下来的指南，我们无需使用本指南中所有用到的资源，因此我们会进行一些清理工作，以便为下一部分指南中的[管理输出章节](https://www.webpackjs.com/guides/output-management/)做好准备：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── package-lock.json
+  ├── package.json
+  ├── src
+- │   ├── Icon.svg
+- │   ├── data.xml
+  │   ├── index.js
+- │   ├── raleway_thin.ttf
+- │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**webpack.config.js**
+
+```diff
+const path = require('path');
+ module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+-   module: {
+-       rules: [
+-           {
+-               test: /\.css$/,
+-               use: [
+-                   'style-loader',
+-                   'css-loader'
+-               ]
+-           },
+-           {
+-               test: /\.(png|svg|jpg|gif)$/,
+-               use: [
+-                   'file-loader'
+-               ]
+-           },
+-           {
+-               test: /\.(woff|woff2|eot|ttf|otf)$/,
+-               use: [
+-                   'file-loader'
+-               ]
+-           },
+-       		{
+-         			test: /\.(csv|tsv)$/,
+-         			use: [
+-           			'csv-loader'
+-         			]
+-       		},
+-       		{
+-         			test: /\.xml$/,
+-         			use: [
+-           			'xml-loader'
+-         			]
+-       		}
+-       ]
+-   }
+}
+```
+
+**src/index.js**
+
+```diff
+  import _ from 'loadsh';
+- import './style.css';
+- import Icon from './Icon.svg'
+- import Data from './data.xml'
+
+  function component() {
+      var element = document.createElement('div');
+
+-     // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+-     element.classList.add('hello');
+-     //添加图片到div
+-     var myIcon = new Image();
+-     myIcon.src = Icon;
+-     element.appendChild(myIcon);
+-     console.log(Data)
+      return element;
+  }
+
+  document.body.appendChild(component());
+```
+
+
+
