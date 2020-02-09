@@ -1730,3 +1730,176 @@ Child html-webpack-plugin for "index.html":
 
 现在，你已经学会了如何自动编译代码，并运行一个简单的开发服务器(development server)，你可以查看下一个指南，其中将介绍 [模块热替换(hot module replacement)](https://www.webpackjs.com/guides/hot-module-replacement)。
 
+### 模块热替换
+
+模块热替换(Hot Module Replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。本页面重点介绍**实现**，而[概念页面](https://www.webpackjs.com/concepts/hot-module-replacement)提供了更多关于它的工作原理以及为什么它有用的细节。
+
+<div style="padding:5px 14px;background:#fbedb7;">
+  <p style="color:#8c8466;font-style: italic;">
+    HMR 不适用于生产环境，这意味着它应当只在开发环境使用。更多详细信息，请查看<a href="https://www.webpackjs.com/guides/production" style="text-decoration: none;">生产环境构建指南</a>。
+  </p>
+</div>
+
+#### 启用HMR
+
+启用此功能实际上相当简单。而我们要做的，就是更新 [webpack-dev-server](https://github.com/webpack/webpack-dev-server) 的配置，和使用 webpack 内置的 HMR 插件。我们还要删除掉 `print.js` 的入口起点，因为它现在正被 `index.js` 模块使用。
+
+> *如果你使用了* `webpack-dev-middleware` *而没有使用* `webpack-dev-server`*，请使用* [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) *package 包，以在你的自定义服务或应用程序上启用 HMR。*
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+  const { CleanWebpackPlugin } = require('clean-webpack-plugin');
++ const webpack = require('webpack');
+
+  module.exports = {
+      entry: {
+          app: './src/index.js',
+-          print: './src/print.js'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist'),
+-         publicPath: '/'
+      },
+      devtool: 'inline-source-map',
+      devServer: {
+          contentBase: './dist',
++         hot: true
+      },
+      plugins: [
+          new CleanWebpackPlugin(),
+          new HtmlWebpackPlugin({
+              title: "模块热替换"
+          }),
++         new webpack.NamedModulesPlugin(),
++         new webpack.HotModuleReplacementPlugin()
+      ]
+  }
+```
+
+> *你可以通过命令来修改* [webpack-dev-server](https://github.com/webpack/webpack-dev-server) *的配置：*`webpack-dev-server --hotOnly`*。*
+
+<div style="padding:5px 14px;background:#fbedb7;">
+  <p style="color:#8c8466;font-style: italic;">
+   <code>publicPath: '/'</code>是使用webpack-dev-middleware的配置项，这里可以不用。加上的话普通编译会出问题，这个以后再讲。
+  </p>
+</div>
+
+注意，我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。在起步阶段，我们将通过在命令行中运行 `npm start` 来启动并运行 dev server。
+
+现在，我们来修改 `index.js` 文件，以便当 `print.js` 内部发生变更时可以告诉 webpack 接受更新的模块。
+
+**index.js**
+
+```diff
+  import _ from 'loadsh';
+  import printMe from './print'
+
+  function component() {
+      var element = document.createElement('div');
+      var btn = document.createElement('button');
+
+      // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+
+      btn.innerHTML = 'Click me and check the console!!!';
+      btn.onclick = printMe;
+
+      element.appendChild(btn);
+
+      return element;
+  }
+
+  document.body.appendChild(component());
++
++ if (module.hot) {
++     module.hot.accept('print.js', function() {
++         console.log('Accepting the updated printMe module!');
++         printMe();
++     })
++ }
+```
+
+更改 `print.js` 中 `console.log` 的输出内容，你将会在浏览器中看到如下的输出。
+
+**print.js**
+
+```diff
+  export default function printMe() {
+-     console.log('I get called from print.js!');
++     console.log('Updating print.js...')
+  }
+```
+
+**浏览器 console**
+![](static/imgs/截屏2020-02-0909.44.10.png)
+
+> 这样是会报警告⚠️：说无法应用更新，并且强制刷新了。后面排查出来是忘记删除掉 `print.js` 的入口起点了，因为`print.js`并未使用hmr暴露接口。
+
+删除掉 `print.js` 的入口起点后：
+
+```sh
+[WDS] App updated. Recompiling...
+reloadApp.js:19 [WDS] App hot update...
+log.js:24 [HMR] Checking for updates on the server...
+index.js:29 module.hot.status() apply
+index.js:30 Accepting the updated printMe module!
+print.js:3 Updating print.js...
+log.js:24 [HMR] Updated modules:
+log.js:24 [HMR]  - ./src/print.js
+log.js:24 [HMR] App is up to date.
+```
+
+如果你继续点击示例页面上的按钮，你会发现控制台仍在打印这旧的 `printMe` 功能。这是因为按钮的 `onclick` 事件仍然绑定在旧的 `printMe` 函数上。
+
+为了让它与 HMR 正常工作，我们需要使用 `module.hot.accept` 更新绑定到新的 `printMe` 函数上
+
+**index.js**
+
+```diff
+  import _ from 'loadsh';
+  import printMe from './print'
+
+  function component() {
+      var element = document.createElement('div');
+      var btn = document.createElement('button');
+
+      // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+
+      btn.innerHTML = 'Click me and check the console!!!';
+      btn.onclick = printMe;
+
+      element.appendChild(btn);
+
+      return element;
+  }
+
+- document.body.appendChild(component());
++ let element = component(); // 当 print.js 改变导致页面重新渲染时，重新获取渲染的元素
++ document.body.appendChild(element);
+
+  if (module.hot) {
+      module.hot.dispose(data => {
+          // 清理并将 data 传递到更新后的模块……
+          console.log(data)
+      })
+      module.hot.accept('./print.js', function() {
+          console.log('module.hot.status()', module.hot.status())
+          console.log('Accepting the updated printMe module!');
+-         printMe();
++         document.body.removeChild(element);
++         element = component(); // 重新渲染页面后，component 更新 click 事件处理
++         document.body.appendChild(element);
+      })
+  }
+```
+
+这只是一个例子，但还有很多其他地方可以轻松地让人犯错。幸运的是，存在很多 loader（其中一些在下面提到），使得模块热替换的过程变得更容易。
+
+> 在学习过程中，你也许也会发现，及时没有引入`webpack.HotModuleReplacement`插件也能实现热更新，这是因为一旦设置了`devServer.hot: true`，会自动引入这个插件。具体可见[devserver-hot](https://www.webpackjs.com/configuration/dev-server/#devserver-hot)
+
+#### 
