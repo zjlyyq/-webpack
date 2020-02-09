@@ -1935,3 +1935,153 @@ server.listen(5000, 'localhost', () => {
 ```
 
 > *如果你在* [使用 `webpack-dev-middleware`](https://www.webpackjs.com/guides/development#using-webpack-dev-middleware)*，可以通过* [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) *package 包，在自定义开发服务下启用 HMR。*
+
+#### HMR 修改样式表
+
+借助于 `style-loader` 的帮助，CSS 的模块热替换实际上是相当简单的。当更新 CSS 依赖模块时，此 loader 在后台使用 `module.hot.accept` 来修补(patch) `<style>` 标签。
+
+所以，可以使用以下命令安装两个 loader ：
+
+```bash
+npm install --save-dev style-loader css-loader
+```
+
+接下来我们来更新 webpack 的配置，让这两个 loader 生效。
+
+**webpack.config.js**
+
+```diff
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+    entry: {
+        app: './src/index.js',
+    },
+    output: {
+        filename: '[name].bundle.js',
+        path: path.resolve(__dirname, 'dist'),
+        // publicPath: '/'
+    },
++   module: {
++       rules:[
++           {
++              test: /\.(css||less||sass)$/,
++              use: [
++                   'style-loader',
++                   'css-loader'
++               ]
++           }
++       ]
++   },
+    devtool: 'inline-source-map',
+    devServer: {
+        contentBase: './dist',
+        hot: true
+    },
+    plugins: [
+        new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            title: "模块热替换"
+        }),
+        new webpack.NamedModulesPlugin(),
+        new webpack.HotModuleReplacementPlugin()
+    ]
+}
+```
+
+热加载样式表，与将其导入模块一样简单：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── dist
+  ├── package-lock.json
+  ├── package.json
+  ├── server.js
+  ├── src
+  │   ├── index.js
+  │   ├── print.js
++ │   └── style.css
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**styles.css**
+
+```css
+body {
+  background: blue;
+}
+```
+
+**index.js**
+
+```diff
+  import _ from 'loadsh';
+  import printMe from './print'
++ import './style.css'
+
+  function component() {
+      var element = document.createElement('div');
+      var btn = document.createElement('button');
+
+      // Loadsh 现在通过import导入
+      element.innerHTML = _.join(['Hello', 'webpack!'], ' ');
+
+      btn.innerHTML = 'Click me and check the console!!!';
+      btn.onclick = printMe;
+
+      element.appendChild(btn);
+
+      return element;
+  }
+
+  // document.body.appendChild(component());
+  let element = component(); // 当 print.js 改变导致页面重新渲染时，重新获取渲染的元素
+  document.body.appendChild(element);
+
+  if (module.hot) {
+      module.hot.dispose(data => {
+          // 清理并将 data 传递到更新后的模块……
+          console.log(data)
+      })
+      module.hot.accept('./print.js', function() {
+          console.log('Accepting the updated printMe module!');
+          printMe();
+          document.body.removeChild(element);
+          element = component(); // 重新渲染页面后，component 更新 click 事件处理
+          document.body.appendChild(element);
+      })
+  }
+```
+
+**style.css**
+
+```diff
+  body {
+-   background: blue;
++   background: red;
+  }
+```
+
+#### 其他代码和框架
+
+社区还有许多其他 loader 和示例，可以使 HMR 与各种框架和库(library)平滑地进行交互……
+
+- [React Hot Loader](https://github.com/gaearon/react-hot-loader)：实时调整 react 组件。
+
+- [Vue Loader](https://github.com/vuejs/vue-loader)：此 loader 支持用于 vue 组件的 HMR，提供开箱即用体验。
+
+- [Elm Hot Loader](https://github.com/fluxxu/elm-hot-loader)：支持用于 Elm 程序语言的 HMR。
+
+- [Redux HMR](https://survivejs.com/webpack/appendices/hmr-with-react/#configuring-hmr-with-redux)：无需 loader 或插件！只需对 main store 文件进行简单的修改。
+
+- [Angular HMR](https://github.com/gdi2290/angular-hmr)：No loader necessary! A simple change to your main NgModule file is all that's required to have full control over the HMR APIs.没有必要使用 loader！只需对主要的 NgModule 文件进行简单的修改，由 HMR API 完全控制。
+
+  

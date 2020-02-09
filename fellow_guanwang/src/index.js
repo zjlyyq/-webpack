@@ -1,6 +1,6 @@
 import _ from 'loadsh';
 import printMe from './print'
-
+import './style.css'
 function component() {
     var element = document.createElement('div');
     var btn = document.createElement('button');

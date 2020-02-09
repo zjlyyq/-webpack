@@ -12,6 +12,17 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         // publicPath: '/'
     },
+    module: {
+        rules:[
+            {
+                test: /\.(css||less||sass)$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            }
+        ]
+    },
     devtool: 'inline-source-map',
     devServer: {
         contentBase: './dist',
@@ -22,7 +33,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "模块热替换"
         }),
-        // new webpack.NamedModulesPlugin(),
-        // new webpack.HotModuleReplacementPlugin()
+        new webpack.NamedModulesPlugin(),
+        new webpack.HotModuleReplacementPlugin()
     ]
 }
