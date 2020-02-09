@@ -1902,4 +1902,36 @@ log.js:24 [HMR] App is up to date.
 
 > 在学习过程中，你也许也会发现，及时没有引入`webpack.HotModuleReplacement`插件也能实现热更新，这是因为一旦设置了`devServer.hot: true`，会自动引入这个插件。具体可见[devserver-hot](https://www.webpackjs.com/configuration/dev-server/#devserver-hot)
 
-#### 
+#### 通过 Node.js API
+
+当使用 webpack dev server 和 Node.js API 时，不要将 dev server 选项放在 webpack 配置对象(webpack config object)中。而是，在创建选项时，将其作为第二个参数传递。例如：
+
+```js
+new WebpackDevServer(compiler, options)
+```
+
+想要启用 HMR，还需要修改 webpack 配置对象，使其包含 HMR 入口起点。`webpack-dev-server` package 中具有一个叫做 `addDevServerEntrypoints` 的方法，你可以通过使用这个方法来实现。这是关于如何使用的一个小例子：
+
+**dev-server.js**
+
+```js
+const webpackDevServer = require('webpack-dev-server');
+const webpack = require('webpack');
+
+const config = require('./webpack.config.js');
+const options = {
+  contentBase: './dist',
+  hot: true,
+  host: 'localhost'
+};
+
+webpackDevServer.addDevServerEntrypoints(config, options);
+const compiler = webpack(config);
+const server = new webpackDevServer(compiler, options);
+
+server.listen(5000, 'localhost', () => {
+  console.log('dev server listening on port 5000');
+});
+```
+
+> *如果你在* [使用 `webpack-dev-middleware`](https://www.webpackjs.com/guides/development#using-webpack-dev-middleware)*，可以通过* [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) *package 包，在自定义开发服务下启用 HMR。*
