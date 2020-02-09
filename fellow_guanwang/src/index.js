@@ -1,12 +1,14 @@
-import _ from 'loadsh';
+import { cube } from './math'
 
 function component() {
-    var element = document.createElement('div');
-  
-    // Loadsh 现在通过import导入
-    element.innerHTML = _.join(['Hello', 'webpack'], ' ');
-  
+    var element = document.createElement('pre');
+
+    element.innerHTML = [
+        'Hello webpack!',
+        '5 cubed is equal to ' + cube(5)
+    ].join('\n\n');
+
     return element;
 }
-  
+
 document.body.appendChild(component());
