@@ -527,5 +527,76 @@ Invalid configuration object. Webpack has been initialised using a configuration
 
 SplitChunksPlugin允许我们将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。让我们使用这个插件，将之前的示例中重复的 `lodash` 模块去除：
 
-> webpack v4中已删除CommonsChunkPlugin。要了解如何在最新版本中处理chunk，请查看SplitChunksPlugin
+> webpack 4中已删除CommonsChunkPlugin。要了解如何在最新版本中处理chunk，请查看SplitChunksPlugin
+
+**webpack.config.js**
+
+```diff
+    const path = require('path');
+    const webpack = require('webpack')
+    const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+    const HtmlWebpackPlugin = require('html-webpack-plugin');
+    module.exports = {
+        mode: 'development',
+        entry: {
+            index: "./src/index.js",
+            another: './src/another-module.js'
+        },
+        output: {
+            filename: '[name].bundle.js',
+            path: path.resolve(__dirname, 'dist')
+        },
+        plugins: [
+            new CleanWebpackPlugin(),
+            new HtmlWebpackPlugin({
+                title: 'Code Splitting'
+            })
+        ],
++       optimization: {
++           splitChunks: {
++               chunks: 'all',
++               cacheGroups: {
++                   vendors: {
++                       test: /[\\/]node_modules[\\/]/,
++                       priority: 1,
++                   },
++               }
++           }
++       }
+    }
+```
+
+使用了optimization.splitChunks配置选项后，我们现在应该看到从index.bundle.js和another.bundle.js中删除了重复的依赖项。SplitChunksPlugin插件将 `lodash` 分离到单独的 chunk，并且将其从 main bundle 中移除，减轻了大小。执行 `npm run build` 查看效果：
+
+```sh
+Hash: 1e66a3ab0b30195b7c6b
+Version: webpack 4.41.6
+Time: 721ms
+Built at: 2020-03-02 15:15:35
+                          Asset       Size                 Chunks             Chunk Names
+              another.bundle.js   7.01 KiB                another  [emitted]  another
+                index.bundle.js   7.15 KiB                  index  [emitted]  index
+                     index.html  333 bytes                         [emitted]
+vendors~another~index.bundle.js    547 KiB  vendors~another~index  [emitted]  vendors~another~index
+Entrypoint index = vendors~another~index.bundle.js index.bundle.js
+Entrypoint another = vendors~another~index.bundle.js another.bundle.js
+```
+
+以下是由社区提供的，一些对于代码分离很有帮助的插件和 loaders：
+
+- [`mini-css-extract-plugin`](https://webpack.js.org/plugins/mini-css-extract-plugin): 用于将 CSS 从主应用程序中分离。
+- [`bundle-loader`](https://webpack.js.org/loaders/bundle-loader): 用于拆分代码并延迟加载生成的包。
+- [`promise-loader`](https://github.com/gaearon/promise-loader): 与bundle-loader相似，但使用promises。
+
+##### 动态导入(dynamic imports)
+
+当涉及到动态代码拆分时，webpack 提供了两个类似的技术。对于动态导入，第一种，也是优先选择的方式是，使用符合 [ECMAScript 提案](https://github.com/tc39/proposal-dynamic-import) 的 [`import()` 语法](https://www.webpackjs.com/api/module-methods#import-)。第二种，则是使用 webpack 特定的 [`require.ensure`](https://www.webpackjs.com/api/module-methods#require-ensure)。让我们先尝试使用第一种……
+
+<div style="background-color: #fbedb7;padding:14px 10px;">
+    <code>import()</code>调用会在内部用到 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">promises</a>。如果在旧有版本浏览器中使用 <code>import()</code>，记得使用 一个 polyfill 库（例如 <a href="https://github.com/stefanpenner/es6-promise">es6-promise</a> 或 <a href="https://github.com/taylorhakes/promise-polyfill">promise-polyfill</a>），来 shim Promise。
+</div>
+
+### 缓存
+
+
 
