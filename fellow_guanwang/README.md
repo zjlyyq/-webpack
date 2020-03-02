@@ -380,5 +380,152 @@ You can also set it to 'none' to disable any default behavior. Learn more: https
 
 > *通过向* `npm run build` *命令和你的参数之间添加两个中横线，可以将自定义参数传递给 webpack，例如：*`npm run build -- --colors`*。*
 
-### 管理资源
+### 代码分离
+
+代码分离是 webpack 中最引人注目的特性之一。此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
+
+有三种常用的代码分离方法：
+
++ 入口起点：使用 [`entry`](https://www.webpackjs.com/configuration/entry-context) 配置手动地分离代码。
++ 防止重复: 使用 [`SplitChunksPlugin`](https://webpack.js.org/plugins/split-chunks-plugin/) to dedupe and split chunks.
++ 动态导入：通过模块的内联函数调用来分离代码。
+
+#### 入口起点
+
+这是迄今为止最简单、最直观的分离代码的方式。不过，这种方式手动配置较多，并有一些陷阱，我们将会解决这些问题。先来看看如何从 main bundle 中分离另一个模块：
+
+**project**
+
+```diff
+  ./fellow_guanwang/
+  ├── README.md
+  ├── package-lock.json
+  ├── package.json
+  ├── src
++ │   ├── another-module.js
+  │   └── index.js
+  ├── static
+  │   └── imgs
+  └── webpack.config.js
+```
+
+**another-module.js**
+
+```js
+import _ from 'lodash';
+
+console.log(
+  _.join(['Another', 'module', 'loaded!'], ' ')
+);
+```
+
+**webpack.config.js**
+
+```diff
+  const path = require('path');
+  const webpack = require('webpack')
+  const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
+  module.exports = {
+  		mode: 'development',
+      entry: {
+          index: "./src/index.js",
++         another: './src/another-module.js'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
+      plugins: [
+          new CleanWebpackPlugin()
+      ]
+  }
+```
+
+将生成如下构建结果：
+
+```sh
+Hash: 6424577ab584033b06af
+Version: webpack 4.41.5
+Time: 482ms
+Built at: 2020-02-28 15:07:39
+            Asset     Size   Chunks             Chunk Names
+another.bundle.js  551 KiB  another  [emitted]  another
+  index.bundle.js  551 KiB    index  [emitted]  index
+Entrypoint index = index.bundle.js
+Entrypoint another = another.bundle.js
+```
+
+正如前面所说的，这种方法存在缺陷：
+
+- 如果入口 chunks 之间包含重复的模块，那些重复模块都会被引入到各个 bundle 中。
+- 这种方法不够灵活，并且不能将核心应用程序逻辑进行动态拆分代码。
+
+以上两点中，第一点对我们的示例来说无疑是个问题，因为之前我们在 `./src/index.js` 中也引入过 `lodash`，这样就在两个 bundle 中造成重复引用。接着，我们通过使用 [`SplitChunksPlugin`](https://webpack.js.org/plugins/split-chunks-plugin/) 来移除重复的模块。
+
+#### 防止重复(prevent duplication)
+
+##### 入口依赖（Entry dependencies）
+
+DependOn选项允许在`chunks`之间共享模块。
+
+```diff
+  const path = require('path');
+  const webpack = require('webpack')
+  const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
+  module.exports = {
+      mode: 'development',
+      entry: {
+-     		index: './src/index.js',
+-     		another: './src/another-module.js',
++         index: {
++             import: "./src/index.js",
++             dependOn: 'shared'
++         },
++         another: {
++             import: './src/another-module.js',
++             dependOn: 'shared'
++         },
++         shared: 'loadsh'
+      },
+      output: {
+          filename: '[name].bundle.js',
+          path: path.resolve(__dirname, 'dist')
+      },
+      plugins: [
+          new CleanWebpackPlugin()
+      ]
+  }
+```
+
+但是构建结果总是报错：
+
+```sh
+
+Invalid configuration object. Webpack has been initialised using a configuration object that does not match the API schema.
+ - configuration.entry should be one of these:
+   function | object { <key>: non-empty string | [non-empty string] } | non-empty string | [non-empty string]
+   -> The entry point(s) of the compilation.
+   Details:
+    * configuration.entry['index'] should be a string.
+      -> The string is resolved to a module which is loaded upon startup.
+    * configuration.entry['index'] should be an array:
+      [non-empty string]
+      -> A non-empty array of non-empty strings
+    * configuration.entry['index'] should be one of these:
+      [non-empty string]
+      -> All modules are loaded upon startup. The last one is exported.
+    * configuration.entry['index'] should be one of these:
+      non-empty string | [non-empty string]
+      -> An entry point with name
+```
+
+问题已经提到[stackoverflow](https://stackoverflow.com/questions/60456258/code-splitting-with-entry-dependency-but-get-an-error-and-my-webpack-version-is)上，先不纠结，直接往下看。
+
+##### SplitChunksPlugin
+
+SplitChunksPlugin允许我们将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。让我们使用这个插件，将之前的示例中重复的 `lodash` 模块去除：
+
+> webpack v4中已删除CommonsChunkPlugin。要了解如何在最新版本中处理chunk，请查看SplitChunksPlugin
 
