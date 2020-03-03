@@ -10,7 +10,7 @@ module.exports = {
         // another: './src/another-module.js'
     },
     output: {
-        filename: '[name].bundle.js',
+        filename: '[name].[contenthash].bundle.js',
         path: path.resolve(__dirname, 'dist')
     },
     module: {
@@ -37,6 +37,7 @@ module.exports = {
                     priority: 1,
                 },
             }
-        }
+        },
+        runtimeChunk: 'single'
     }
 }

@@ -5,7 +5,7 @@ function component() {
     var element = document.createElement('div');
   
     // Loadsh 现在通过import导入
-    element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+    element.innerHTML = _.join(['Hello', 'webpack',' 4'], ' ');
   
     return element;
 }

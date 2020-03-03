@@ -595,8 +595,63 @@ Entrypoint another = vendors~another~index.bundle.js another.bundle.js
 <div style="background-color: #fbedb7;padding:14px 10px;">
     <code>import()</code>调用会在内部用到 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">promises</a>。如果在旧有版本浏览器中使用 <code>import()</code>，记得使用 一个 polyfill 库（例如 <a href="https://github.com/stefanpenner/es6-promise">es6-promise</a> 或 <a href="https://github.com/taylorhakes/promise-polyfill">promise-polyfill</a>），来 shim Promise。
 </div>
-
 ### 缓存
+
+#### 输出文件名
+
+此部分和webpack 3相同，都是通过`[contenthash]`实现的。
+
+#### 提取样板
+
+正如我们在代码拆分中了解到的那样，`SplitChunksPlugin`可用于将模块拆分为单独的包。webpack提供了一种优化功能，可以使用`optimization.runtimeChunk`选项将运行时代码分成单独的块。
+
+**webpack.config.js**
+
+```diff
+    const path = require('path');
+    const webpack = require('webpack')
+    const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+    const HtmlWebpackPlugin = require('html-webpack-plugin');
+    const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+    module.exports = {
+        mode: 'development',
+        entry: {
+            index: "./src/index.js",
+            // another: './src/another-module.js'
+        },
+        output: {
+            filename: '[name].bundle.js',
+            path: path.resolve(__dirname, 'dist')
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.css$/i,
+                    use: [MiniCssExtractPlugin.loader, 'css-loader']
+                }
+            ]
+        },
+        plugins: [
+            new CleanWebpackPlugin(),
+            new HtmlWebpackPlugin({
+                title: 'Code Splitting'
+            }),
+            new MiniCssExtractPlugin()
+        ],
+        optimization: {
+            splitChunks: {
+                chunks: 'all',
+                cacheGroups: {
+                    vendors: {
+                        test: /[\\/]node_modules[\\/]/,
+                        priority: 1,
+                    },
+                }
+            },
++           runtimeChunk: 'single'
+        }
+    }
+```
 
 
 
