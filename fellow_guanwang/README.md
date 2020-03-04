@@ -620,7 +620,7 @@ Entrypoint another = vendors~another~index.bundle.js another.bundle.js
             // another: './src/another-module.js'
         },
         output: {
-            filename: '[name].bundle.js',
+            filename: '[name].[contenthash].bundle.js',
             path: path.resolve(__dirname, 'dist')
         },
         module: {
@@ -653,5 +653,98 @@ Entrypoint another = vendors~another~index.bundle.js another.bundle.js
     }
 ```
 
+让我们运行另一个构建，以查看提取的`runtime` bundle：
 
+```sh
+Hash: 3f8d363fd44fbcef68b8
+Version: webpack 4.41.6
+Time: 1134ms
+Built at: 2020-03-03 13:48:57
+                                       Asset       Size         Chunks                         Chunk Names
+        index.8911eae477f260b50523.bundle.js   1.61 KiB          index  [emitted] [immutable]  index
+                                   index.css   27 bytes          index  [emitted]              index
+                                  index.html  428 bytes                 [emitted]
+      runtime.668fef96189e5ef5ed56.bundle.js   6.12 KiB        runtime  [emitted] [immutable]  runtime
+vendors~index.3d55313e9e5d30a0de33.bundle.js    547 KiB  vendors~index  [emitted] [immutable]  vendors~index
+Entrypoint index = runtime.668fef96189e5ef5ed56.bundle.js vendors~index.3d55313e9e5d30a0de33.bundle.js index.css index.8911eae477f260b50523.bundle.js
+```
+
+#### 模块标识符
+
+当我们向项目添加另一个模块print.js，`vendor` bundle 的hash值也改变了，因为它的 `module.id` 改变了。
+
+模块的`module.id`取决于[`optimization.namedModules`](https://webpack.js.org/configuration/optimization/#optimizationruntimechunk)属性。这块地方好像还一直在[变动](https://github.com/webpack/webpack/issues/8268)，同样暂时不在此纠结。
+
+关于缓存的[进阶阅读](https://github.com/webpack/webpack.js.org/issues/652)。
+
+### 创建 library
+
+暂缓 [日后再看](https://webpack.js.org/guides/author-libraries/)
+
+### 环境变量
+
+要在开发和生产版本之间消除`webpack.config.js`中的歧义，可以使用环境变量。
+
+<div style="background-color: #eaf8ff;padding:14px 10px;">
+    webpack的环境变量和操作系统shell（例如：bash 和 CMD.exe）中的<a href="https://en.wikipedia.org/wiki/Environment_variable">环境变量</a>不一样。
+</div>
+
+webpack 命令行[环境配置](https://webpack.js.org/api/cli/#environment-options)中，通过设置 `--env` 可以使你根据需要，传入尽可能多的环境变量。在 `webpack.config.js` 文件中可以访问到这些环境变量。例如，`--env.production` 或 `--env.NODE_ENV=local`（`NODE_ENV` 通常约定用于定义环境类型，查看[这里](https://dzone.com/articles/what-you-should-know-about-node-env)）。
+
+```sh
+webpack --env.NODE_ENV=local --env.production --progress
+```
+
+> 更多命令行配置参见[webpack CLI](https://webpack.js.org/api/cli/#environment-options)
+
+```
+const path = require('path');
+const webpack = require('webpack')
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+module.exports = env => {
+    console.log('NODE_ENV: ', env.NODE_ENV) // 'local'
+    console.log('Production: ', env.production) // true
+    return {
+        mode: 'development',
+        entry: {
+            index: "./src/index.js",
+            // app: './src/app.js'
+        },
+        output: {
+            filename: '[name].[contenthash].bundle.js',
+            path: path.resolve(__dirname, 'dist')
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.css$/i,
+                    use: [MiniCssExtractPlugin.loader, 'css-loader']
+                }
+            ]
+        },
+        plugins: [
+            new CleanWebpackPlugin(),
+            new HtmlWebpackPlugin({
+                title: 'Code Splitting'
+            }),
+            new MiniCssExtractPlugin()
+        ],
+        optimization: {
+            moduleIds: 'natural',
+            splitChunks: {
+                chunks: 'all',
+                cacheGroups: {
+                    vendors: {
+                        test: /[\\/]node_modules[\\/]/,
+                        priority: 1,
+                    },
+                }
+            },
+            runtimeChunk: 'single'
+        }
+    }
+}
+```
 
