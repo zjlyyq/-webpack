@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack_build": "webpack",
+    "webpack_build": "webpack --config webpack.prod.js",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --open"
   },
@@ -21,6 +21,7 @@
     "file-loader": "^4.2.0",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "mini-css-extract-plugin": "^0.11.1",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "style-loader": "^1.0.0",

@@ -1,0 +1,61 @@
+'use strict'
+const path = require('path')
+const webpack = require('webpack')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+module.exports = {
+    entry: {
+        index: './src/index.js',
+        search: './src/search.js'
+    },
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name]_[chunkhash:8].js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                use: 'babel-loader'
+            },
+            {
+                test: /.css$/,
+                use: [
+                    // "style-loader", style-loader和MiniCssExtractPlugin功能冲突（前者将css插到html头部，后者将css提取到独立文件）
+                    MiniCssExtractPlugin.loader,
+                    "css-loader"
+                ]
+            },
+            {
+                test: /.less$/,
+                use: [
+                    // "style-loader",
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    "less-loader"
+                ]
+            },
+            {
+                test: /.(jpg|png|jpeg|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 102400  //100k
+                        }
+                    }
+                ]
+            },
+            {
+                test: /.(otf|tff)$/,
+                use: "file-loader"
+            }
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: '[name]_[contenthash:8].css'
+        })
+    ],
+    mode: 'production',
+}
