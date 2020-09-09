@@ -2,6 +2,8 @@
 const path = require('path')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
     entry: {
@@ -55,6 +57,24 @@ module.exports = {
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name]_[contenthash:8].css'
+        }),
+        new OptimizeCSSAssetsPlugin({
+            assetNameRegExp: /\.css$/,
+            cssProcessor: require('cssnano')
+        }),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, 'src/search.html'),
+            filename: 'search_uglify.html', 
+            chunks: ['search'],
+            inject: true,
+            minify: {
+                html5: true,
+                collapseWhitespace: true,
+                preserveLineBreaks: false,
+                minifyCSS: true,
+                minifyJS: true,
+                removeComments: false
+            }
         })
     ],
     mode: 'production',
