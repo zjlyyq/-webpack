@@ -1,0 +1,13 @@
+@font-face {
+    font-family: SedonaScriptFLF;
+    src: url(4b3931bdaae647cdc797a4e1557f773b.otf) format("truetype")
+}
+
+.search-text {
+    font-family: SedonaScriptFLF;
+    color: #ff8830;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex
+}
