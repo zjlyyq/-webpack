@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin')
+const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
 module.exports = {
     entry: {
         index: './src/index.js',
@@ -33,14 +33,14 @@ module.exports = {
                 test: /.less$/,
                 use: [
                     // HtmlInlineCssWebpackPlugin.loader,
-                    {
-                        loader: "style-loader",
-                        options: {
-                            insert: 'head', // 样式插入到 <head> 其他选项body
-                            // singleton: true, //将所有的style标签合并成一个
-                        }
-                    },
-                    // MiniCssExtractPlugin.loader,
+                    // {
+                    //     loader: "style-loader",
+                    //     options: {
+                    //         insert: 'head', // 样式插入到 <head> 其他选项body
+                    //         // singleton: true, //将所有的style标签合并成一个
+                    //     }
+                    // },
+                    MiniCssExtractPlugin.loader,
                     "css-loader",
                     "postcss-loader",
                     "less-loader",
@@ -92,7 +92,8 @@ module.exports = {
                 removeComments: false
             }
         }),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
+        new HtmlInlineCssWebpackPlugin()
     ],
     mode: 'production',
 }
