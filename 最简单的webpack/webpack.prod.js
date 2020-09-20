@@ -132,5 +132,6 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlInlineCssWebpackPlugin()
     ],
-    mode: 'production',
+    mode: 'none',
+    devtool: 'source-map'
 }
