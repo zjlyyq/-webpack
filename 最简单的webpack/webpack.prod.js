@@ -21,8 +21,8 @@ const setMPA = () => {
         htmlWebpackPlugins.push(
             new HtmlWebpackPlugin({
                 template: path.join(__dirname, `src/${pageName}/${pageName}.html`),
-                filename: `${pageName}_uglify.html`, 
-                chunks: [pageName],
+                filename: `${pageName}_uglify.html`,
+                chunks: ['vendors', pageName],
                 inject: true,
                 minify: {
                     html5: true,
@@ -132,21 +132,32 @@ module.exports = {
         ...mpa.htmlWebpackPlugins,
         new CleanWebpackPlugin(),
         new HtmlInlineCssWebpackPlugin(),
-        new HtmlWebpackExternalsPlugin({
-            externals: [
-                {
-                    module: 'react',
-                    entry: 'https://now8.gtimg.com/now/lib/16.2.0/react.min.js',
-                    global: 'React'
-                },
-                {
-                    module: 'react-dom',
-                    entry: 'https://now8.gtimg.com/now/lib/16.2.0/react-dom.min.js',
-                    global: 'ReactDOM'
-                }
-            ]
-        })
+        // new HtmlWebpackExternalsPlugin({
+        //     externals: [
+        //         {
+        //             module: 'react',
+        //             entry: 'https://now8.gtimg.com/now/lib/16.2.0/react.min.js',
+        //             global: 'React'
+        //         },
+        //         {
+        //             module: 'react-dom',
+        //             entry: 'https://now8.gtimg.com/now/lib/16.2.0/react-dom.min.js',
+        //             global: 'ReactDOM'
+        //         }
+        //     ]
+        // })
     ],
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    test: /(react|react-dom)/,
+                    name: 'vendors',
+                    chunks: 'all'
+                }
+            }
+        }
+    },
     mode: 'none',
     devtool: 'none',
 }
