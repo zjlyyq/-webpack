@@ -166,6 +166,6 @@ module.exports = {
             }
         }
     },
-    mode: 'none',
+    mode: 'production',
     devtool: 'none',
 }
