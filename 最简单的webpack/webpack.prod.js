@@ -22,7 +22,7 @@ const setMPA = () => {
             new HtmlWebpackPlugin({
                 template: path.join(__dirname, `src/${pageName}/${pageName}.html`),
                 filename: `${pageName}_uglify.html`,
-                chunks: ['vendors', pageName],
+                chunks: ['commons', pageName],
                 inject: true,
                 minify: {
                     html5: true,
@@ -149,11 +149,12 @@ module.exports = {
     ],
     optimization: {
         splitChunks: {
+            minSize: 0,
             cacheGroups: {
                 commons: {
-                    test: /(react|react-dom)/,
-                    name: 'vendors',
-                    chunks: 'all'
+                    name: 'commons',
+                    chunks: 'all',
+                    minChunks: 2
                 }
             }
         }
