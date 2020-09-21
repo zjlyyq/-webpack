@@ -1,17 +1,17 @@
-function ajaxPromise(url, method) {
+export default function ajaxPromise(url, method) {
     return Promise((resolve, reject) => {
-        let xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function(res) {
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = (res) => {
             if (xhr.status === '200') {
                 resolve(res);
-            }else {
+            } else {
                 reject(res);
             }
-        }
+        };
         try {
-            xhr.open();
-        }catch (err) {
+            xhr.open(url, method);
+        } catch (err) {
             reject(err);
         }
-    })
+    });
 }
