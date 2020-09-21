@@ -92,7 +92,7 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _helloworld__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 
-document.write(Object(_helloworld__WEBPACK_IMPORTED_MODULE_0__["default"])()); // if (module.hot) {
+document.write(Object(_helloworld__WEBPACK_IMPORTED_MODULE_0__["helloworld"])()); // if (module.hot) {
 //     module.hot.accept()
 // }
 
@@ -109,4 +109,3 @@ function helloworld() {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=index_05148329.js.map

@@ -7,6 +7,7 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
+const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
 
 const setMPA = () => {
     const entry = {};
@@ -130,8 +131,22 @@ module.exports = {
         // }),
         ...mpa.htmlWebpackPlugins,
         new CleanWebpackPlugin(),
-        new HtmlInlineCssWebpackPlugin()
+        new HtmlInlineCssWebpackPlugin(),
+        new HtmlWebpackExternalsPlugin({
+            externals: [
+                {
+                    module: 'react',
+                    entry: 'https://now8.gtimg.com/now/lib/16.2.0/react.min.js',
+                    global: 'React'
+                },
+                {
+                    module: 'react-dom',
+                    entry: 'https://now8.gtimg.com/now/lib/16.2.0/react-dom.min.js',
+                    global: 'ReactDOM'
+                }
+            ]
+        })
     ],
     mode: 'none',
-    devtool: 'source-map'
+    devtool: 'none',
 }
