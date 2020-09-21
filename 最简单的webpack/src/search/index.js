@@ -21,3 +21,10 @@ ReactDom.render(
     <Search/>,
     document.getElementById('app')
 )
+
+setTimeout(() => {
+    //// 异步导入模块
+    import('../../plugin/ajaxPromise').then(res => {
+        console.log(res);
+    })
+}, 5000);
