@@ -15,6 +15,14 @@ module.exports = {
         "indent": ["error", 4],
         // 默认使用windows换行风格  即： CRLF \r\n
         "linebreak-style": ["warn", "windows"],
-        "react/jsx-indent": ["error", 4]
+        "react/jsx-indent": ["error", 4],
+        "jsx-a11y/no-noninteractive-element-interactions": [
+            'error',
+            {
+                handlers: [
+                    
+                ],
+            },
+        ],
     }
 };

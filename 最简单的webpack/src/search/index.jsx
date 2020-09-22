@@ -6,14 +6,43 @@ import './search.less';
 import logo from './static/images/google_keep.png';
 import '../../common/index';
 
-const Search = () => (
-    <div className="search-text">
-        <img src={logo} width="300px" alt="logo" />
-        <div>
-            <p>Search Text</p>
-        </div>
-    </div>
-);
+class Search extends React.Component {
+    constructor(...args) {
+        // const args = [].slice.call(arguments, 1);
+        super(...args);
+        this.state = {
+            Text: null,
+        };
+    }
+
+    onKeyDownHandle() {
+        console.log(this.state);
+    }
+
+    loadComonent() {
+        import('./test.jsx').then((m) => {
+            console.log(m);
+            this.setState({
+                Text: m.default,
+            });
+        });
+    }
+
+    render() {
+        const { Text } = this.state;
+        return (
+            <div className="search-text">
+                {
+                    Text ? <Text /> : null
+                }
+                <img src={logo} width="300px" alt="logo" onClick={this.loadComonent.bind(this)} onKeyDown={this.onKeyDownHandle.bind(this)} />
+                <div>
+                    <p>Search Text</p>
+                </div>
+            </div>
+        );
+    }
+}
 
 ReactDom.render(<Search />, document.getElementById('app'));
 
