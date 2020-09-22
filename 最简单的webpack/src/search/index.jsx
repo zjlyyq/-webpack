@@ -1,6 +1,7 @@
 // document.write('search page!')
 import React from 'react';
 import ReactDom from 'react-dom';
+import priceNumber from 'price-number';
 import './search.less';
 // require('./search.less')
 import logo from './static/images/google_keep.png';
@@ -30,6 +31,8 @@ class Search extends React.Component {
 
     render() {
         const { Text } = this.state;
+        const a = '0.17';
+        const b = '0.05';
         return (
             <div className="search-text">
                 {
@@ -37,7 +40,10 @@ class Search extends React.Component {
                 }
                 <img src={logo} width="300px" alt="logo" onClick={this.loadComonent.bind(this)} onKeyDown={this.onKeyDownHandle.bind(this)} />
                 <div>
-                    <p>Search Text</p>
+                    <p>
+                        Search Text:
+                        {priceNumber.sub(a, b)}
+                    </p>
                 </div>
             </div>
         );

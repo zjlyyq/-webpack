@@ -12,10 +12,12 @@ const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
 const setMPA = () => {
     const entry = {};
     const htmlWebpackPlugins = [];
-    let entries = glob.sync(path.join(__dirname, './src/*/index.jsx'))
+    let entries = glob.sync(path.join(__dirname, './src/*/index.jsx')).concat(
+        glob.sync(path.join(__dirname, './src/*/index.js'))
+    )
     // console.log(entries)
     entries.map(item => {
-        let match = item.match(/src\/(.*)\/index\.jsx/);
+        let match = item.match(/src\/(.*)\/index\.jsx?/);
         let pageName = match[1];
         entry[pageName] = item;
         htmlWebpackPlugins.push(
