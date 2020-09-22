@@ -1,11 +1,12 @@
 {
   "name": "price-number",
   "version": "1.0.0",
-  "description": "",
+  "description": "标准金额数字加减操作库",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack",
+    "prepublish": "webpack"
   },
   "keywords": [],
   "author": "",
