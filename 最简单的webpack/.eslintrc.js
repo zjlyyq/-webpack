@@ -14,6 +14,7 @@ module.exports = {
         // 强制使用4空格缩进
         "indent": ["error", 4],
         // 默认使用windows换行风格  即： CRLF \r\n
-        "linebreak-style": "windows"
+        "linebreak-style": ["warn", "windows"],
+        "react/jsx-indent": ["error", 4]
     }
 };

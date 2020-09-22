@@ -42,13 +42,15 @@
     "postcss-loader": "^4.0.1",
     "px2rem-loader": "^0.1.9",
     "raw-loader": "^0.5.1",
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0",
     "style-loader": "^1.0.0",
     "url-loader": "^2.2.0",
     "vue": "^2.6.10",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   }
 }

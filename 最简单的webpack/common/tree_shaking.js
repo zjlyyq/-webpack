@@ -1,4 +1,4 @@
-export function a() {
+export default function a() {
     return 'This is Function a';
 }
 

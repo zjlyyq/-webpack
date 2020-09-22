@@ -12,10 +12,10 @@ const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
 const setMPA = () => {
     const entry = {};
     const htmlWebpackPlugins = [];
-    let entries = glob.sync(path.join(__dirname, './src/*/index.js'))
+    let entries = glob.sync(path.join(__dirname, './src/*/index.jsx'))
     // console.log(entries)
     entries.map(item => {
-        let match = item.match(/src\/(.*)\/index\.js/);
+        let match = item.match(/src\/(.*)\/index\.jsx/);
         let pageName = match[1];
         entry[pageName] = item;
         htmlWebpackPlugins.push(
@@ -55,7 +55,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.js|.jsx$/,
                 use: [
                     'babel-loader',
                     'eslint-loader'
