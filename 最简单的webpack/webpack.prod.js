@@ -7,7 +7,8 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
-const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
+const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 
 const setMPA = () => {
     const entry = {};
@@ -150,7 +151,8 @@ module.exports = {
         //             global: 'ReactDOM'
         //         }
         //     ]
-        // })
+        // }),
+        new FriendlyErrorsWebpackPlugin()
     ],
     optimization: {
         splitChunks: {
@@ -173,4 +175,5 @@ module.exports = {
     },
     mode: 'production',
     devtool: 'none',
+    stats: 'errors-only'
 }

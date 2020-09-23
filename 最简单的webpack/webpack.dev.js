@@ -2,6 +2,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -63,11 +64,13 @@ module.exports = {
     mode: 'development',
     plugins: [
         // new webpack.HotModuleReplacementPlugin()
+        new FriendlyErrorsWebpackPlugin()
     ],
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
         hotOnly: true,
         // hot: true,
-        host: '172.24.2.4'
+        host: '172.24.2.4',
+        stats: 'errors-only'
     }
 }
