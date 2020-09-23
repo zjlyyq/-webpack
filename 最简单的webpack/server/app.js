@@ -5,7 +5,12 @@ if (typeof window === 'undefined') {
 const express = require('express');
 const { renderToString } = require('react-dom/server');
 const SSR = require('../dist/search-server.js');
-console.log('../dist/search-server.js', express);
+const path = require('path');
+const fs = require('fs');
+
+const template = fs.readFileSync(path.join(__dirname, '../dist/search_uglify.html'), 'utf-8');
+console.log(template);
+const data = require('./data.json');
 
 const server = (port) => {
     const app = express();
@@ -23,18 +28,7 @@ const server = (port) => {
 
 server(3000);
 
-function renderMarkup(template) {
-    return `
-    <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>服务端渲染</title>
-        </head>
-        <body>
-            <div id="app">${template}</div>
-        </body>
-    </html>
-    `;
+function renderMarkup(str) {
+    return template.replace('<!--HTML_PLACEHOLDER-->', str)
+                   .replace('<!--INITIAL-DATA-->', `<script> window.__initial_data = ${JSON.stringify(data)}</script>`);
 }

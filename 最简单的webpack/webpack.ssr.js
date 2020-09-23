@@ -6,7 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
+// const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
 
 const setMPA = () => {
     const entry = {};
@@ -80,7 +80,7 @@ module.exports = {
                     //         // singleton: true, //将所有的style标签合并成一个
                     //     }
                     // },
-                    MiniCssExtractPlugin.loader,
+                    MiniCssExtractPlugin.loader,   // 将css 单独 拆分为一个文件
                     "css-loader",
                     "postcss-loader",
                     "less-loader",
@@ -120,7 +120,7 @@ module.exports = {
         }),
         ...mpa.htmlWebpackPlugins,
         new CleanWebpackPlugin(),
-        new HtmlInlineCssWebpackPlugin(),
+        // new HtmlInlineCssWebpackPlugin(),
     ],
     // optimization: {
     //     splitChunks: {
