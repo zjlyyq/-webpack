@@ -140,6 +140,8 @@ function sub(amt1, amt2) {
     for (let i = 0; i < ans.length - 2; i++) {
         if (ans[i] == '0' && ans[i + 1] != '.') {
             offset += 1;
+        }else {
+            break;
         }
     }
     ans = ans.substring(offset);
