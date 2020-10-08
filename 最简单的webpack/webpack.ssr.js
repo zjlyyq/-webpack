@@ -50,7 +50,7 @@ module.exports = {
     output: {
         path: path.join(__dirname, 'dist'),
         filename: '[name]-server.js',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd'     // 这里为什么是umd？
     },
     module: {
         rules: [
@@ -118,29 +118,6 @@ module.exports = {
             assetNameRegExp: /\.css$/,
             cssProcessor: require('cssnano')
         }),
-        ...mpa.htmlWebpackPlugins,
-        new CleanWebpackPlugin(),
-        // new HtmlInlineCssWebpackPlugin(),
     ],
-    // optimization: {
-    //     splitChunks: {
-    //         minSize: 0,
-    //         cacheGroups:{
-    //             // 公共模块
-    //             commons: {
-    //                 name: 'commons',
-    //                 chunks: 'all',
-    //                 minChunks: 2
-    //             },
-    //             // 基础库
-    //             vendor: {
-    //                 test: /(react|react-dom)/,
-    //                 name: 'vendors',
-    //                 chunks: 'all'
-    //             }
-    //         }
-    //     }
-    // },
-    mode: 'production',
-    devtool: 'none',
+    
 }
