@@ -1,4 +1,4 @@
-const { merge } = require('webpack-merge');
+const merge = require('webpack-merge');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const cssnano = require('cssnano');
 const baseConfig = require('./webpack.base.js');
@@ -35,3 +35,4 @@ const prodConfig = {
 };
 
 module.exports = merge(baseConfig, prodConfig);
+console.log(merge(baseConfig, prodConfig))

@@ -1,24 +1,27 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const path = require('path');
 const glob = require('glob');
 
+// process.cwd() 方法返回 Node.js 进程的当前工作目录
+const projectRoot = process.cwd();  //冒烟测试脚本执行过：process.chdir(path.join(__dirname, 'template'));
 // 多页面打包
 const setMPA = () => {
   const entry = {};
   const htmlWebpackPlugins = [];
-  const entries = glob.sync(path.join(__dirname, './src/*/index.jsx')).concat(
-    glob.sync(path.join(__dirname, './src/*/index.js')),
+  const entries = glob.sync(path.join(projectRoot, './src/*/index.jsx')).concat(
+    glob.sync(path.join(projectRoot, './src/*/index.js')),
   );
+  console.log('---- entry ----', entries);
   entries.map((item) => {
     const match = item.match(/src\/(.*)\/index\.jsx?/);
     const pageName = match[1];
     entry[pageName] = item;
     htmlWebpackPlugins.push(
       new HtmlWebpackPlugin({
-        template: path.join(__dirname, `src/${pageName}/${pageName}.html`),
+        template: path.join(projectRoot, `src/${pageName}/${pageName}.html`),
         filename: `${pageName}_uglify.html`,
         chunks: ['vendors', 'commons', pageName],
         inject: true,
@@ -42,7 +45,11 @@ const setMPA = () => {
 
 const { entry, htmlWebpackPlugins } = setMPA();
 module.exports = {
-  entry,
+  entry: entry,
+  output: {
+    path: path.join(projectRoot, 'dist'),
+    filename: '[name]_[chunkhash:8].js'
+  },
   // 资源解析 ， 样式增强
   module: {
     rules: [
@@ -118,7 +125,8 @@ module.exports = {
       this.hooks.done.tap('done', (stats) => {
         if (stats.compilation.errors
                     && stats.compilation.errors.length && process.argv.indexOf('- -watch') === -1) {
-          process.exit(1);
+            // console.log('--------build error-------------', stats.compilation.errors);
+            process.exit(1);
         }
       });
     },
