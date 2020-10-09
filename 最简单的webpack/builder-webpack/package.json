@@ -4,17 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "istanbul cover --no-default-excludes --report=text  -x '**/node_modules/**' node_modules/.bin/_mocha",
     "eslint": "eslint ./lib --fix"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "assert": "^2.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "glob-all": "^3.2.1",
+    "istanbul": "^0.4.5",
     "mocha": "^8.1.3",
     "rimraf": "^3.0.2",
     "webpack-merge": "^5.1.4"
