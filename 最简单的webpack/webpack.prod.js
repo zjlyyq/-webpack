@@ -153,8 +153,11 @@ module.exports = {
         //         }
         //     ]
         // }),
+        new webpack.DllReferencePlugin({
+            manifest: require('./build/library/library.json')
+        }),
         new FriendlyErrorsWebpackPlugin(),
-        new BundleAnalyzerPlugin(),
+        // new BundleAnalyzerPlugin(),
         function () {
             this.hooks.done.tap('done', (stats) => {
                 if (stats.compilation.errors &&
@@ -167,25 +170,25 @@ module.exports = {
             })
         }
     ],
-    optimization: {
-        splitChunks: {
-            minSize: 0,
-            cacheGroups: {
-                // 公共模块
-                commons: {
-                    name: 'commons',
-                    chunks: 'all',
-                    minChunks: 2
-                },
-                // 基础库
-                vendor: {
-                    test: /(react|react-dom)/,
-                    name: 'vendors',
-                    chunks: 'all'
-                }
-            }
-        }
-    },
+    // optimization: {
+    //     splitChunks: {
+    //         minSize: 0,
+    //         cacheGroups: {
+    //             // 公共模块
+    //             commons: {
+    //                 name: 'commons',
+    //                 chunks: 'all',
+    //                 minChunks: 2
+    //             },
+    //             // 基础库
+    //             vendor: {
+    //                 test: /(react|react-dom)/,
+    //                 name: 'vendors',
+    //                 chunks: 'all'
+    //             }
+    //         }
+    //     }
+    // },
     mode: 'production',
     devtool: 'none',
     // stats: 'errors-only'

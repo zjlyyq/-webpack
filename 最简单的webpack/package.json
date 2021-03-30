@@ -8,6 +8,7 @@
     "webpack:stats": "webpack --config webpack.prod.js --json > stats.json",
     "webpack_build": "webpack --config webpack.prod.js",
     "build:ssr": "webpack --config webpack.ssr.js",
+    "ddl": "webpack --config webpack.ddl.js",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --open"
   },
