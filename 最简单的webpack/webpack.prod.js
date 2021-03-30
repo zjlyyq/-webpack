@@ -9,6 +9,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlInlineCssWebpackPlugin = require('html-inline-css-webpack-plugin').default
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const setMPA = () => {
     const entry = {};
@@ -153,6 +154,7 @@ module.exports = {
         //     ]
         // }),
         new FriendlyErrorsWebpackPlugin(),
+        new BundleAnalyzerPlugin(),
         function () {
             this.hooks.done.tap('done', (stats) => {
                 if (stats.compilation.errors &&
@@ -186,5 +188,5 @@ module.exports = {
     },
     mode: 'production',
     devtool: 'none',
-    stats: 'errors-only'
+    // stats: 'errors-only'
 }
